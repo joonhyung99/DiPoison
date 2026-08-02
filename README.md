@@ -89,6 +89,9 @@ DiPoison/
 | §4.4 — Training-query-count ablation | Train at each query count with `scripts/train_grpo_poison.py --input <100/300/500-query CSV>`, then evaluate each with `eval/main_dipoison_fullcorpus_ragdef.py` (no separate plotting code is included) |
 | §4.4/Table 12 — Untargeted-query utility / collateral damage | `eval/clean_acc_eval.py` (NQ, poison-free baseline sanity check), `eval/collateral_damage_eval.py --dataset {nq,hotpotqa,msmarco}` (single script for all three reported datasets). All reported numbers use the same 100-query evaluation set as the rest of the paper. |
 | Table 6 — Multi-objective reward ablation | `scripts/ablation/` (see `scripts/ablation/README.md` for the `--ablation` <-> table-row mapping), PPL column via `eval/measure_objective_ablation_ppl_gpt2xl.py` |
+| Table 2 / Supp. Table 8 — Query-paraphrasing defense | `scripts/paraphrase_q.py` (Gemini-based query rewriting; requires `--api_key` / `GEMINI_API_KEY`, see `requirements.txt`'s optional `google-genai` note), then re-run evaluation on the paraphrased query CSV with `eval/main_dipoison_fullcorpus_ragdef.py` |
+| Supp. Tables 6-7 — Perplexity statistics | `eval/measure_attack_ppl_gpt2xl.py` (poison-document PPL, per attack method), `eval/measure_clean_corpus_ppl_gpt2xl.py` (clean-corpus baseline PPL) |
+| Supp. §5.5/Table 13 — Additional 300-query robustness check | `data/nq_train_validate/nq300_validate_v234.csv` (300 disjoint queries) + `data/generated/val300/pd_eval300_{cont,e5,merged}.csv` (pre-generated N=4 / merged N=7 poison sets), evaluated the same way as the 100-query set with `eval/main_dipoison_fullcorpus_ragdef.py` / `eval/multi_retriever_ragdef_eval.py`. No standalone query-selection script is included — the 300 queries were sampled uniformly at random without a fixed seed, so this CSV is the artifact needed to reproduce the reported numbers, not to regenerate a fresh sample. |
 
 See `eval/README.md` for the full evaluation guide (retriever/defense options, argument
 reference, output format) and `scripts/ablation/README.md` / `scripts/supplementary/README.md`
@@ -102,6 +105,9 @@ for those two experiments specifically.
 |------|------|------|
 | `nq_train100.csv` / `nq_train300.csv` / `nq_train500.csv` | `query`, `target_answer`, `seed_doc` | Training-query-count sensitivity (100/300/500). `nq_train100` is an independently sampled 100-query set (disjoint from `nq_train500`); `nq_train300` is the first 300 queries of `nq_train500` |
 | `nq100_validate.csv` | `query`, `target_answer`, `seed_doc` | Evaluation: 100 queries disjoint from training |
+| `nq300_validate_v234.csv` | `query`, `target_answer`, `correct_answer`, `seed_doc`, `golden_passage`, `beir_title`, `n_normal_docs` | Supp. §5.5/Table 13: 300 queries disjoint from both training and the 100-query evaluation set, sampled uniformly at random |
+| `val300/pd_eval300_cont.csv` / `pd_eval300_e5.csv` | `query`, `target_answer`, `correct_answer`, `doc0_seed`, `doc1`~`doc3` | Pre-generated N=4 poison sets for the 300-query set (Contriever / E5 surrogate) |
+| `val300/pd_eval300_merged.csv` | `query`, `target_answer`, `correct_answer`, `doc0_seed`, `doc1`~`doc6` | Merged Contriever+E5 poison set for the 300-query set (2N−1=7 budget, Table 3-style cross-retriever transfer) |
 
 ---
 
